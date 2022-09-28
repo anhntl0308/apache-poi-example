@@ -20,33 +20,26 @@ public class FileService {
     public void readFile(MultipartFile file) {
         try (XWPFDocument doc = new XWPFDocument(
                 file.getInputStream())) {
-
-            Iterator<IBodyElement> docElementsIterator = doc.getBodyElementsIterator();
-
-            while (docElementsIterator.hasNext()) {
-                IBodyElement docElement = docElementsIterator.next();
-                if ("PARAGRAPH".equalsIgnoreCase(docElement.getElementType().name())) {
-                    List<XWPFParagraph> list = doc.getParagraphs();
-                    for (XWPFParagraph paragraph : list) {
-                        System.out.print(paragraph.getText());
-                        List<XWPFRun> runs = paragraph.getRuns();
-                        if (!runs.isEmpty()) {
-                            Style style = getStyle(runs.get(0), doc);;
-                            style.setType(getStringOrEmpty(paragraph.getStyle()));
-                            System.out.print(" " + objectMapper.writeValueAsString(style));
-                        }
-                        System.out.println();
+            List<IBodyElement> elements = doc.getBodyElements();
+            for (IBodyElement element : elements) {
+                BodyElementType beType = element.getElementType();
+                if (beType.equals(BodyElementType.PARAGRAPH)) {
+                    XWPFParagraph paragraph = (XWPFParagraph) element;
+                    System.out.print(paragraph.getText());
+                    List<XWPFRun> runs = paragraph.getRuns();
+                    if (!runs.isEmpty()) {
+                        Style style = getStyle(runs.get(0), doc);
+                        ;
+                        style.setType(getStringOrEmpty(paragraph.getStyle()));
+                        System.out.print(" " + objectMapper.writeValueAsString(style));
                     }
-                } else if ("TABLE".equalsIgnoreCase(docElement.getElementType().name())) {
-                    List<XWPFTable> xwpfTableList = docElement.getBody().getTables();
-                    for (XWPFTable xwpfTable : xwpfTableList) {
-                        System.out.println("Total Rows : " + xwpfTable.getNumberOfRows());
-                        for (int i = 0; i < xwpfTable.getRows().size(); i++) {
-                            for (int j = 0; j < xwpfTable.getRow(i).getTableCells().size(); j++) {
-                                String text = getStringOrNull(xwpfTable.getRow(i).getCell(j).getText());
-                                System.out.print(text + " | ");
-                            }
-                            System.out.println();
+                    System.out.println();
+                } else if (beType.equals(BodyElementType.TABLE)) {
+                    XWPFTable xwpfTable = (XWPFTable) element;
+                    for (int k = 0; k < xwpfTable.getRows().size(); k++) {
+                        for (int j = 0; j < xwpfTable.getRow(k).getTableCells().size(); j++) {
+                            String text = getStringOrNull(xwpfTable.getRow(k).getCell(j).getText());
+                            System.out.print(text + " | ");
                         }
                         System.out.println();
                     }
@@ -58,7 +51,7 @@ public class FileService {
     }
 
 
-    public Style getStyle(XWPFRun run, XWPFDocument doc){
+    public Style getStyle(XWPFRun run, XWPFDocument doc) {
         Style style = new Style();
         style.setSize(run.getFontSize() == -1 ? doc.getStyles().getDefaultRunStyle().getFontSize() : run.getFontSize());
         style.setBold(run.isBold());
