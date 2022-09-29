@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,14 +30,15 @@ public class FileService {
                     List<XWPFRun> runs = paragraph.getRuns();
                     if (!runs.isEmpty()) {
                         Style style = getStyle(runs.get(0), doc);
-                        ;
                         style.setType(getStringOrEmpty(paragraph.getStyle()));
                         System.out.print(" " + objectMapper.writeValueAsString(style));
                     }
                     System.out.println();
                 } else if (beType.equals(BodyElementType.TABLE)) {
                     XWPFTable xwpfTable = (XWPFTable) element;
+                    System.out.println("Total Rows : " + xwpfTable.getNumberOfRows());
                     for (int k = 0; k < xwpfTable.getRows().size(); k++) {
+                        System.out.print("row "+(k+1)+": ");
                         for (int j = 0; j < xwpfTable.getRow(k).getTableCells().size(); j++) {
                             String text = getStringOrNull(xwpfTable.getRow(k).getCell(j).getText());
                             System.out.print(text + " | ");
